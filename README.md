@@ -1,15 +1,14 @@
-#Activity Recognition Web Service
-
-##Overview
+# Activity Recognition Web Service
+## Overview
 
 This repository contains the source for a REST API web service that performs human activity recognition
 based on state of the art deep learning models. This app is still under development and will continue to be update regularly.
 
-###Features in the current version
+### Features in the current version
 
 Currently the service can accept an image stream from the client build samples according to the client pre configured parameters and call a model to run inference on the samples.
 
-##Setup 
+## Setup 
 
 The service can be setup in two ways either as a docker image for deployment or testing reasons
 or from source for further development.
@@ -18,15 +17,15 @@ For both installations you will need to:
  * Clone this repo `$ git clone https://github.com/AbdurrahmanNadi/activity_recognition_web_service.git`
  * run the `repo_setup.sh` script to download the pretrained checkpoints.
 
-###Docker image
+### Docker image
 
 * Install [docker](https://docs.docker.com/install/) on your machine
 * run `$ docker build <the root of this repo> -t <image_name:tag>`
 * Running the docker image will launch the service on the default port 5000 so you need to expose this port to your client
 
-###Source Install
+### Source Install
 
-####Requirements:
+#### Requirements:
 
 1. Ubuntu Machine
 2. Python 3
@@ -37,7 +36,7 @@ For both installations you will need to:
 7. [Flask](https://github.com/pallets/flask/)
 
 
-###Test
+### Test
 
 On your client setup a python environment with opencv and simply run 
 the test script you need at least the `test_client.py` script and the `Test_videos` directory
@@ -72,9 +71,9 @@ You should get these results.
 
 
 
-##Models Supported
+## Models Supported
 
-###Kinetics pretrained I3D model
+### Kinetics pretrained I3D model
 
 Based on google deepmind implementation of the paper "[Quo Vadis,
 Action Recognition? A New Model and the Kinetics
@@ -85,7 +84,7 @@ The implemented model is based on the inception-v1 I3D model as stated in the pa
 and pretrained on the kinetics data set split. For more information about the model 
 you can visit [the deepmind github repo][deepmind_repo]
 
-####Model Details
+#### Model Details
 
 These are the implementation details related to the service for more details on the model structure you can refer to the [deepmind repo][deepmind_repo]
 * It can accept rgb or optical flow samples or both and averaging their output logits
@@ -94,26 +93,28 @@ These are the implementation details related to the service for more details on 
 * The model provides its own preprocessing for input samples.
 For more details please refer to [the model README][i3d]
 
-######You can find all implemented models inside the models directory
+###### You can find all implemented models inside the models directory
 
 
-##Web Service
+## Web Service
 
-###The Underlying REST API
+### The Underlying REST API
 
-METHOD         | Request URL             | Function
--------------- | :---------------------- | -----------
-POST           | <base_uri>/init_model   | creates a model
-PUT            | <base_uri>/upload_image | uploads an image
-GET            | <base_uri>/prediction   | returns a prediction
+METHOD         | Request URL                       | Function
+-------------- | :-------------------------------- | -----------
+POST           | <base_uri>/init_model             | creates a model
+PUT            | <base_uri>/upload_image/<user_id> | uploads an image
+GET            | <base_uri>/prediction/<user_id>   | returns a prediction
+
+The server automaitcally returns on successful initialization all the API URLs that the client can use.
 
 
-##License
+## License
 
 This software is licensed under the Apache License Version 2.0 and contains open source code from other repositories
 that support similar kind of licensing
 
-##Questions
+## Questions
 
 For any questions please direct them to [Abdelrahman Nadi](abdurrahman.naddie@gmail.com)
 
