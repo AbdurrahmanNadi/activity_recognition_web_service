@@ -120,4 +120,4 @@ For any questions please direct them to [Abdelrahman Nadi](abdurrahman.naddie@gm
 
 
 [deepmind_repo]: https://github.com/deepmind/kinetics-i3d
-[i3d]: https://github.com/AbdurrahmanNadi/activity_recogntion_web_service/models/i3d
+[i3d]: https://github.com/AbdurrahmanNadi/activity_recognition_web_service/tree/master/models/i3d
