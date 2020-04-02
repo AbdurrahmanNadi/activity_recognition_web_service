@@ -10,9 +10,9 @@ Zisserman.
 
 For more detail on the model architecture refer to the [deepmind implementation][deepmind_repo].
 
-##Model Structure
+## Model Structure
 
-###Model inputs
+### Model inputs
 
 The model can have two types of inputs as specified by the `eval_type` parameter:
 * RGB input: 3 channel rgb frames 
@@ -22,7 +22,7 @@ The input video sampled at 25 frames per second and preprocessed according the
 preprocessing mentioned in the [deepmind repository][deepmind_repo] to produce these inputs.
 This is implemented in `preprocessing.py`.
 
-###Model Parameters
+### Model Parameters
 
 * `eval_type`: The type of model used and it determines the preprocessing used. Types allowed are
     1. `rgb`: Normal RGB model trained for kinetics 400
@@ -36,7 +36,7 @@ This is implemented in `preprocessing.py`.
 
 All these paramters are required from the client to run the model.
 
-###Model Output
+### Model Output
 
 The model returns the output layer logits, the probablities for each label and the labels themselves as show in this
 sample.
@@ -76,7 +76,7 @@ Typical flow of running the model is:
 * Initialize the model
 * Run the model using the preprocesed data as input
 
-##Further Information
+## Further Information
 
 For more information about the model please refer to [its implementation][deepmind_repo]
 
