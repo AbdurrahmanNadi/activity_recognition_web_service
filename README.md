@@ -6,12 +6,17 @@ based on state of the art deep learning models. This app is still under developm
 
 ### Features in the current version
 
-Currently the service can accept an image stream from the client build samples according to the client pre configured parameters and call a model to run inference on the samples.
+###### Currently implemented features
+* REST API web service 
+* Assembles images sent from the client to form samples for the model
+* Computes inference based on the i3d deep learning model
 
 ## Setup 
 
-The service can be setup in two ways either as a docker image for deployment or testing reasons
-or from source for further development.
+###### Instructions are for the server side installation
+There are two ways to setup this repository as a running service:
+* By using it as a docker image
+* By installing it manually on a linux machine
 
 For both installations you will need to:
  * Clone this repo `$ git clone https://github.com/AbdurrahmanNadi/activity_recognition_web_service.git`
@@ -21,23 +26,25 @@ For both installations you will need to:
 
 * Install [docker](https://docs.docker.com/install/) on your machine
 * run `$ docker build <the root of this repo> -t <image_name:tag>`
-* Running the docker image will launch the service on the default port 5000 so you need to expose this port to your client
 
 ### Source Install
 
 #### Requirements:
 
-1. Ubuntu Machine
-2. Python 3
-3. [OpenCV](https://github.com/opencv/opencv.git)
-4. [Tensorflow version 1.15](https://www.tensorflow.org/install/pip)
-5. [dm-sonnet version < 2](https://github.com/deepmind/sonnet)
-6. [tensorflow-probability version < 0.9.0](https://github.com/tensorflow/probability)
-7. [Flask](https://github.com/pallets/flask/)
+1. Python 3
+2. The pip requirements included in requirements.txt which you can install via `pip install -r requirements.txt`
 
 
 ### Test
 
+#### Running the server
+* Docker case: simply run the docker image (you need sudo access) `sudo docker run -t <image_name:tag>`
+  running the docker image will launch the service on the default port 5000 so you need to expose this port to your client
+  or use the `--network host` option to run it on your localhost. For more information please see the [docker run network options]
+  (https://docs.docker.com/engine/reference/run/#network-settings)
+* Source installation: run server.py
+
+#### Running the client
 On your client setup a python environment with opencv and simply run 
 the test script you need at least the `test_client.py` script and the `Test_videos` directory
 on your client.
@@ -106,8 +113,57 @@ POST           | <base_uri>/init_model             | creates a model
 PUT            | <base_uri>/upload_image/<user_id> | uploads an image
 GET            | <base_uri>/prediction/<user_id>   | returns a prediction
 
-The server automaitcally returns on successful initialization all the API URLs that the client can use.
+the base_uri parameter is `host_url:port/activity_recognition/i3d/v1.0` you will find that defined in the `test_client.py` script.
 
+#### Initialize model: POST <base_uri>/init_model
+
+The client sends a POST request to this url with the parameters required to run and initialize a model instance.
+The request is a json request which structure is
+```
+{
+  "param":value
+}
+```
+Currently we only support the i3d model which you can find its parameters [here][i3d]
+
+On a successful creation the request returns with a 201 and json response that contains the API URLs to be used directly the client should capture these values in order to use the functionality of the service.
+```
+{
+  "API":
+  {
+      "run": base_uri>/prediction/<user_id> ,
+      "upload_img": <base_uri>/upload_image/<user_id>
+  }
+}
+```
+
+#### Update Sample: PUT <base_uri>/upload_image/<user_id>
+After the client initialzes a model instance on the server it can upload images into the current active sample collection. This is a PUT request with the following json data
+```
+{
+  "img":<encoded_img>
+}
+```
+**Note that the image has to be encoded as a string of bytes encoded as utf-8** For more information you can refer to the `test_client.py` encode_img function.
+
+On a success there can be two responses:
+* 202 with this json `{"status":"not_finished"}` when the sample is not complete according to num_of_frames parameter.
+* 200 with this json `{"status":"finished"}` when the sample is complete and ready for preprocessing and inference.
+**Note that the sample size is greater than the num_of_frames parameter in the model since we need an extra frame for optical flow**
+
+#### Run inference: GET <base_uri>/prediction/<user_id>
+This is the main feature of the service and is used for getting the inference result. The client sends a GET request to the url with no data or arguments.
+On a success the response is 
+```
+{
+  "status": "success",
+  "prediction": prediction
+}
+```
+The prediction is a list of comma separated strings. Where each lines is formatted as such
+```
+output_logit_value, confidence_level, label
+```
 
 ## License
 
