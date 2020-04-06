@@ -90,8 +90,7 @@ def init_model():
             'API':
             {
                 'run': url_for('run_model', user_id=user_id, _external=True),
-                'upload_img': url_for('add_image', user_id=user_id, _external=True),
-                'end_session': url_for('clean_session', user_id=user_id, _external=True)
+                'upload_img': url_for('add_image', user_id=user_id, _external=True)
             }
         }), 201)
     else:
