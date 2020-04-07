@@ -1,6 +1,6 @@
 opencv-python
 opencv-contrib-python
-tensorflow==1.15
+tensorflow==1.15.2
 dm-sonnet<2
 tensorflow-probability<0.9.0
 flask
