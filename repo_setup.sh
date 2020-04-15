@@ -7,7 +7,7 @@ if [ $(pwd | rev | cut -f 1 -d '/' | rev) == 'activity_recognition_web_service' 
   echo '/data/checkpoints/*' > .git/info/sparse-checkout
   git remote add origin https://github.com/deepmind/kinetics-i3d.git
   git pull origin master
-  mv data/checkpoints ../models/i3d/data/checkpoints || exit
+  mv data/checkpoints ../models/i3d/data || exit
   cd ../ && rm -rf "kinetics-i3d"
   echo 'Pretrained Model Checkpoints downloaded'
   echo '------------------------------------------'
