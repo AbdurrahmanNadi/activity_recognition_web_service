@@ -11,7 +11,7 @@ class InputDataPreprocessor:
 
     def preprocess_frame(self, img, input_type):
         frame = np.double(img)
-        (height, width, chn) = np.shape(frame)
+        (height, width) = np.shape(frame)[:2]
         if height > width:
             aspect_ratio = height / width
             height = int((self.image_size + 32) * aspect_ratio)
@@ -39,13 +39,13 @@ class InputDataPreprocessor:
             x_start = int(x_margin)
             x_end = int(height - x_margin)
         if y_margin % 2 != 0:
-            y_margin = np.floor(x_margin)
+            y_margin = np.floor(y_margin)
             y_start = int(y_margin)
             y_end = int(width - y_margin - 1)
         else :
             y_start = int(y_margin)
             y_end = int(width - y_margin)
-        frame = frame[x_start: x_end, y_start: y_end, :]
+        frame = frame[x_start: x_end, y_start: y_end, ...]
         return frame
 
     def process_input(self, frames):
@@ -59,22 +59,22 @@ class InputDataPreprocessor:
         for i in range(self.num_of_frames + 1):
             img = frames[i, ...]
             if i < self.num_of_frames and self.eval_type in ['rgb', 'rgb600', 'joint']:
-                rgb_data[:, i, ...] = self.preprocess_frame(img, 'rgb')
+                rgb_data[0, i, ...] = self.preprocess_frame(img, 'rgb')
             print(f'[INFO:{time.time()}] Done RGB Preprocessing on Frame{i}')
             gray_frame = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
             if i > 0 and self.eval_type in ['flow', 'joint']:
                 optical_flow = InputDataPreprocessor.optical_flow_preprocessing(old_frame, gray_frame)
-                flow_data[:, i-1, ...] = self.preprocess_frame(optical_flow, 'flow')
+                flow_data[0, i-1, ...] = self.preprocess_frame(optical_flow, 'flow')
                 print(f'[INFO:{time.time()}] Done Flow Preprocessing on Frame{i}')
             old_frame = gray_frame
-        if self.eval_type == 'joint':
-            return rgb_data, flow_data
-        elif self.eval_type in ['rgb', 'rgb600']:
-            return rgb_data
-        elif self.eval_type == 'flow':
-            return flow_data
-
         print(f'[INFO:{time.time()}] Done Sample Preprocessing')
+        if self.eval_type == 'joint':
+            return {'rgb':rgb_data, 'flow':flow_data}
+        elif self.eval_type in ['rgb', 'rgb600']:
+            return {'rgb':rgb_data}
+        elif self.eval_type == 'flow':
+            return {'flow':flow_data}
+
 
     @staticmethod
     def optical_flow_preprocessing(prev_frame, next_frame):

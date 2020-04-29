@@ -32,8 +32,14 @@ For both installations you will need to:
 #### Requirements:
 
 1. Python 3
-2. The pip requirements included in requirements.txt which you can install via `pip install -r requirements.txt`
+2. OpenCV installation
+3. For GPU Support follow the official tensorflow [article](https://www.tensorflow.org/install/gpu):
+    * CUDA 10.0
+    * cuDNN 7.x
+    * tensorRT 6 
+4. The pip requirements included in requirements.txt which you can install via `pip install -r requirements.txt`
 
+You can also use the Dockerfile as reference
 
 ### Test
 

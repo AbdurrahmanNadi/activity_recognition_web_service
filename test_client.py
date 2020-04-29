@@ -19,17 +19,13 @@ def encode_img(image):
 
 
 if __name__ == '__main__':
-    NUM_SAMPLES = 200
+    NUM_SAMPLES = 32
     vs = cv2.VideoCapture('Test_videos/juggling_soccerball.gif')
     _, first_img = vs.read()
     first_img = cv2.cvtColor(first_img, cv2.COLOR_BGR2RGB)
-    first_img = cv2.rotate(first_img, cv2.ROTATE_90_CLOCKWISE)
-    input_shape = np.shape(first_img)
-    sample = np.zeros((NUM_SAMPLES + 1, *input_shape), dtype=np.uint8)
     init_req = json.dumps({
-                                'eval_type': 'joint',
+                                'eval_type': 'rgb',
                                 'imagenet_pretrained': 'True',
-                                'input_shape': input_shape,
                                 'image_size': 224,
                                 'num_of_frames': NUM_SAMPLES
                             })
@@ -43,7 +39,6 @@ if __name__ == '__main__':
         if not ret:
             break
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
         image_req = json.dumps({'img': encode_img(img)})
         response = requests.request("PUT", url=api_url['upload_img'], headers=headers, data=image_req)
         if response.status_code == 200:

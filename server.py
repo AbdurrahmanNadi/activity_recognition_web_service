@@ -64,18 +64,11 @@ def init_model():
     if len(given_ids) < 100:
         if not request.json:
             abort(400)
+        params = request.json
         try:
-            params = request.json
-            assert 'input_shape' in params and all(isinstance(x, int) for x in params['input_shape']) \
-                    and 'eval_type' in params and isinstance(params['eval_type'],str) and \
-                    'image_size' in params and isinstance(params['image_size'],int) and \
-                    'num_of_frames' in params and isinstance(params['num_of_frames'],int) and \
-                    'imagenet_pretrained' in params and params['imagenet_pretrained'] in ['True', 'False']
-        except AssertionError:
-            abort(400)
-        params['input_shape'] = tuple(params['input_shape'])
-        params['imagenet_pretrained'] = True if params['imagenet_pretrained'] == 'True' else False
-
+            params['imagenet_pretrained'] = True if params['imagenet_pretrained'] == 'True' else False
+        except KeyError:
+            pass
         user_id = random.randint(0, sys.maxsize)
         while user_id in given_ids:
             user_id = random.randint(0, sys.maxsize)
@@ -85,7 +78,9 @@ def init_model():
         active_users[user_id] = {'model': model,
                                  'time': 0,
                                  'sample_indx': 0,
-                                 'sample': np.zeros((model.num_of_frames+1, *model.input_shape), dtype=np.uint8)}
+                                 'sample_shape': (model.num_of_frames + 1, None),
+                                 'last_prediction': '',
+                                 'sample': None}
         return make_response(jsonify({
             'API':
             {
@@ -106,11 +101,17 @@ def run_model(user_id):
     model.preprocess_data(sample)
     cwd = os.getcwd()
     os.chdir('models/i3d')
-    active_users[user_id]['prediction'] = model.forward()
+    try:
+        active_users[user_id]['prediction'] = model.forward()
+    except Exception as e :
+        os.chdir(cwd)
+        return make_response(jsonify({'status': 'failed',
+            'prediction': None, 'err_msg':str(e)}), 500)
     os.chdir(cwd)
     active_users[user_id]['sample'][...] = 0
     active_users[user_id]['sample_indx'] = 0
     prediction = [f'{line[0]}, {line[1]}, {line[2]}\n' for line in active_users[user_id]['prediction']]
+    active_users[user_id]['last_prediction'] = prediction
     return make_response(jsonify({'status': 'success',
                                   'prediction': prediction}), 200)
 
@@ -124,21 +125,26 @@ def add_image(user_id):
         abort(400)
     img = decode_img(req['img'])
     user = active_users[user_id]
-    input_shape = user['sample'].shape[1:]
+    if not user['sample_shape'][1]:
+        user['sample_shape'] = (user['sample_shape'][0], *img.shape)
+        user['sample'] = np.zeros(user['sample_shape'], dtype=np.uint8)
+    input_shape = user['sample_shape'][1:]
     num_of_frames = user['sample'].shape[0]
     if not (img.shape[0] == input_shape[0] and img.shape[1] == input_shape[1] and
             img.shape[2] == input_shape[2]):
-        abort(400)
+        img = cv.resize(img, (input_shape[1], input_shape[0]), cv.INTER_LINEAR)
     if user['sample_indx'] > num_of_frames:
         abort(503)
     user['sample'][user['sample_indx'], ...] = img
     user['sample_indx'] += 1
     if user['sample_indx'] >= num_of_frames:
         return make_response(jsonify({'Status: ': 'finished',
-                                      'sample_indx': user['sample_indx']}), 200)
+                                      'sample_indx': user['sample_indx'],
+                                      'last_prediction': user['last_prediction']}), 200)
     else:
         return make_response(jsonify({'Status: ': 'not_finished',
-                                      'sample_indx': user['sample_indx']}), 202)
+                                      'sample_indx': user['sample_indx'],
+                                      'last_prediction': user['last_prediction']}), 202)
 
 
 @app.route('/activity_recognition/i3d/v1.0/cleanup/<int:user_id>', methods=['DELETE'])

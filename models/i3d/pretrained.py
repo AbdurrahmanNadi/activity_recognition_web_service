@@ -41,6 +41,10 @@ def init_model(eval_type='joint', image_size=224, num_of_frames=16, num_classes=
     graph = tf.Graph()
     with graph.as_default():
         # Initialize the inception 3Dv1 model for rgb input
+        rgb_saver = None
+        rgb_input = None
+        flow_saver = None
+        flow_input = None
         if eval_type in ['rgb', 'rgb600', 'joint']:
             # RGB input has 3 channels.
             rgb_input = tf.placeholder(
@@ -98,7 +102,9 @@ def run_model(data, eval_type, imagenet_pretrained, graph, rgb_model, flow_model
     (rgb_input, rgb_saver) = rgb_model
     (flow_input, flow_saver) = flow_model
     (model_logits, model_predictions) = output
-    with tf.Session(graph=graph) as sess:
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    with tf.Session(graph=graph, config=config) as sess:
         feed_dict = {}
         if eval_type in ['rgb', 'rgb600', 'joint']:
             if imagenet_pretrained:
@@ -106,20 +112,20 @@ def run_model(data, eval_type, imagenet_pretrained, graph, rgb_model, flow_model
             else:
                 rgb_saver.restore(sess, _CHECKPOINT_PATHS[eval_type])
             tf.logging.info('RGB checkpoint restored')
-            rgb_sample = data[0]
+            rgb_sample = data['rgb']
             tf.logging.info('RGB data loaded, shape=%s', str(rgb_sample.shape))
             feed_dict[rgb_input] = rgb_sample
-    
+        
         if eval_type in ['flow', 'joint']:
             if imagenet_pretrained:
                 flow_saver.restore(sess, _CHECKPOINT_PATHS['flow_imagenet'])
             else:
                 flow_saver.restore(sess, _CHECKPOINT_PATHS['flow'])
             tf.logging.info('Flow checkpoint restored')
-            flow_sample = data[1]
+            flow_sample = data['flow']
             tf.logging.info('Flow data loaded, shape=%s', str(flow_sample.shape))
             feed_dict[flow_input] = flow_sample
-
+        
         # run the model on the loaded samples
         out_logits, out_predictions = sess.run([model_logits, model_predictions],
                                                feed_dict=feed_dict)
