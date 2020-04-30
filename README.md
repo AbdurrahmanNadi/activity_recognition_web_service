@@ -46,8 +46,8 @@ You can also use the Dockerfile as reference
 #### Running the server
 * Docker case: simply run the docker image (you need sudo access) `sudo docker run -t <image_name:tag>`
   running the docker image will launch the service on the default port 5000 so you need to expose this port to your client
-  or use the `--network host` option to run it on your localhost. For more information please see the [docker run network options]
-  (https://docs.docker.com/engine/reference/run/#network-settings)
+  (e.g. via `docker run --gpus all -p 5000:5000 <image_name:tag>`, the gpus flag will enable [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) GPU support.) 
+  or use the `--network host` option to run it on your localhost. For more information please see the [docker run network options](https://docs.docker.com/engine/reference/run/#network-settings)
 * Source installation: run server.py
 
 #### Running the client
