@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $(pwd | rev | cut -f 1 -d '/' | rev) == 'activity_recognition_web_service' ]; then
-  mkdir -p "kinetics-i3d/data/checkpoints"
+  mkdir -p "models/i3d/data/checkpoints"
   cd "kinetics-i3d" || exit
   git init || exit
   git config core.sparseCheckout true
