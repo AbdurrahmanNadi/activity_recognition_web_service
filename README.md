@@ -118,6 +118,7 @@ METHOD         | Request URL                       | Function
 POST           | <base_uri>/init_model             | creates a model
 PUT            | <base_uri>/upload_image/<user_id> | uploads an image
 GET            | <base_uri>/prediction/<user_id>   | returns a prediction
+DELETE         | <base_uri>/cleanup/<user_id>      | Cleans Up the user session
 
 the base_uri parameter is `host_url:port/activity_recognition/i3d/v1.0` you will find that defined in the `test_client.py` script.
 
@@ -138,7 +139,8 @@ On a successful creation the request returns with a 201 and json response that c
   "API":
   {
       "run": base_uri>/prediction/<user_id> ,
-      "upload_img": <base_uri>/upload_image/<user_id>
+      "upload_img": <base_uri>/upload_image/<user_id>,
+      "cleanup": <base_uri>/cleanup/<user_id>
   }
 }
 ```
@@ -169,6 +171,15 @@ On a success the response is
 The prediction is a list of comma separated strings. Where each lines is formatted as such
 ```
 output_logit_value, confidence_level, label
+```
+
+#### Clean Session: DELETE <base_uri>/cleanup/<user_id>
+When the stream input to the server is done it's recommended to cleanup the session by using the preceding request.
+It returns on a success a 200 code and the following json
+```
+{
+  "status": "Successfully Cleaned"
+}
 ```
 
 ## License

@@ -56,12 +56,14 @@ class Job(threading.Thread):
             self.execute(*self.args, **self.kwargs)
 
 
+current_open_streams = 0
 given_ids = []
 
 
 @app.route('/activity_recognition/i3d/v1.0/init_model', methods=['POST'])
 def init_model():
-    if len(given_ids) < 100:
+    global current_open_streams
+    if current_open_streams < 100:
         if not request.json:
             abort(400)
         params = request.json
@@ -81,11 +83,13 @@ def init_model():
                                  'sample_shape': (model.num_of_frames + 1, None),
                                  'last_prediction': '',
                                  'sample': None}
+        current_open_streams += 1
         return make_response(jsonify({
             'API':
             {
                 'run': url_for('run_model', user_id=user_id, _external=True),
-                'upload_img': url_for('add_image', user_id=user_id, _external=True)
+                'upload_img': url_for('add_image', user_id=user_id, _external=True),
+                'cleanup': url_for('clean_session', user_id=user_id, _external=True)
             }
         }), 201)
     else:
@@ -94,7 +98,7 @@ def init_model():
 
 @app.route('/activity_recognition/i3d/v1.0/prediction/<int:user_id>', methods=['GET'])
 def run_model(user_id):
-    if user_id not in given_ids:
+    if user_id not in active_users:
         abort(404)
     sample = active_users[user_id]['sample']
     model = active_users[user_id]['model']
@@ -118,7 +122,7 @@ def run_model(user_id):
 
 @app.route('/activity_recognition/i3d/v1.0/upload_image/<int:user_id>', methods=['PUT'])
 def add_image(user_id):
-    if user_id not in given_ids:
+    if user_id not in active_users:
         abort(404)
     req = request.json
     if not req or 'img' not in req:
@@ -149,7 +153,13 @@ def add_image(user_id):
 
 @app.route('/activity_recognition/i3d/v1.0/cleanup/<int:user_id>', methods=['DELETE'])
 def clean_session(user_id):
-    pass
+    global current_open_streams
+    if user_id not in active_users:
+        abort(404)
+    del active_users[user_id]
+    current_open_streams -= 1
+    print(f'[INFO: {time.time()}] Model With ID {user_id} Has Been Deleted')
+    return make_response(jsonify({'status': 'Successfully Cleaned'}), 200)
 
 
 @app.errorhandler(400)

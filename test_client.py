@@ -53,3 +53,4 @@ if __name__ == '__main__':
             continue
         else:
             print('Errors')
+    requests.request(method='DELETE', url=api_url['cleanup'])

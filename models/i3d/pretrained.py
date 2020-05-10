@@ -37,7 +37,6 @@ def get_class_labels(eval_type='joint'):
 
 
 def init_model(eval_type='joint', image_size=224, num_of_frames=16, num_classes=400):
-    tf.logging.set_verbosity(tf.logging.INFO)
     graph = tf.Graph()
     with graph.as_default():
         # Initialize the inception 3Dv1 model for rgb input
